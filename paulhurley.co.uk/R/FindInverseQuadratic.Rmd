@@ -12,16 +12,26 @@ your unknown concentrations against their measured response.  Easy.
 This is easy in R (insert R example)
 
 ```{r}
-simpleregression<-data.frame(x=1:10, y=(1:10*rnorm(10,mean=0.5, sd=0.05)))
+#Create a calibration dataset
+simpleregression<-data.frame(conc=1:10, response=(1:10*rnorm(10,mean=0.5, sd=0.05)))
 simpleregression
 
-lmreg<-lm(data=simpleregression, x~y)
+#buid and display the regression
+lmreg<-lm(data=simpleregression, response~conc)
+summary(lmreg)
+regressionplot<-ggplot(data=simpleregression, aes(x=conc, y=response))+
+	geom_point()+stat_smooth(method=lm)
+print(regressionplot)
 
-unknowns<-data.frame(y=runif(10, min=0, max=5))
+#Create some unknown data
+unknowns<-data.frame(response=runif(10, min=0, max=5))
 unknowns
 
-unknowns$predx<-(unknowns$y/coef(lmreg)[[2]])-coef(lmreg)[[1]]
+#Calculate uknown concentration using regression coeficients
+#y=mc+c, so x=(y-c)/m
+unknowns$predconc<-(unknowns$response-coef(lmreg)[[1]])/coef(lmreg)[[2]]
 unknowns
+regressionplot+geom_point(data=unknowns, aes(x=predconc, y=response), colour="red")
 ```
 
 It gets slightly more difficult in this case because of two things; 
