@@ -1,0 +1,181 @@
+= Finding the Inverse of a Quadratic Equation =
+
+== The Calibration Problem ==
+
+I found myself trying to build some R scripts for calculating an unknown 
+concentration using an external calibration line.  This is a basic technique 
+in science, where you measure some response for a range of known samples 
+(your calibrators) and for your unknown samples.  You then construct a 
+calibration line of response against known concentration, and read off 
+your unknown concentrations against their measured response.  Easy.
+
+This is easy in R (insert R example)
+
+
+```r
+simpleregression <- data.frame(x = 1:10, y = (1:10 * 
+    rnorm(10, mean = 0.5, sd = 0.05)))
+```
+
+
+
+```r
+simpleregression
+```
+
+```
+##     x      y
+## 1   1 0.5011
+## 2   2 0.9610
+## 3   3 1.8420
+## 4   4 1.7553
+## 5   5 2.8579
+## 6   6 3.4318
+## 7   7 3.8896
+## 8   8 4.8657
+## 9   9 3.6248
+## 10 10 4.6099
+```
+
+```r
+
+lmreg <- lm(data = simpleregression, x ~ y)
+```
+
+
+```r
+
+unknowns <- data.frame(y = runif(10, min = 0, 
+    max = 5))
+```
+
+
+```r
+unknowns
+```
+
+
+```
+##         y
+## 1  3.6607
+## 2  4.2799
+## 3  0.6766
+## 4  1.9643
+## 5  3.7174
+## 6  2.5744
+## 7  1.0302
+## 8  3.9674
+## 9  3.2613
+## 10 4.2621
+```
+
+```r
+
+unknowns$predx <- (unknowns$y/coef(lmreg)[[2]]) - 
+    coef(lmreg)[[1]]
+```
+
+
+```r
+unknowns
+```
+
+
+```
+##         y  predx
+## 1  3.6607 1.8070
+## 2  4.2799 2.1333
+## 3  0.6766 0.2346
+## 4  1.9643 0.9131
+## 5  3.7174 1.8369
+## 6  2.5744 1.2346
+## 7  1.0302 0.4209
+## 8  3.9674 1.9686
+## 9  3.2613 1.5966
+## 10 4.2621 2.1239
+```
+
+
+It gets slightly more difficult in this case because of two things; 
+Quadratic Regressions and Weighting.  My calibration line was possibly quadratic
+so I was using a quadratic regression.  I also wanted to weight the responses
+in response to their predicted variability, in my case weighting would be 
+proportional to 1/Concentration^2.
+
+However, this now requires you to find the inverse of the resulting quadratic 
+equation to back calculate the concentrations.  You can't just reverse the regression 
+because then the weighting doesn't work.
+
+In addition, a quadratic regression can have two given values for x at a given y, 
+and we're only interested in one, so I wrote a small function to find the inverse of
+a quadratic equation in a given interval.
+
+
+```r
+
+#' Calculate the inverse of a quadratic function y=ax^2+bx+c (ie find x when given y)
+#' Gives NaN with non real solutions
+#'
+#' @param a The x coefficient
+#' @param b The x^2 coefficient
+#' @param c The Intercept
+#' @param y The y value at which the roots should be found
+#' @param roots To select which roots are required, 'both' will give both, or 'min' or 'max'
+#' @param xmin The minimum X value to be considered
+#' @param xmax The maximum X value to be considered
+#' @param na.rm Should NA's be ignored
+#' @returnType
+#' @return A Vector containing the calculated x values at the given y, Imaginary values given as NaN
+#' @author Paul Hurley
+#' @export
+#' @examples
+#' invquad(1,1,-10,0)
+#' invquad(0.1,0.01,-0.5,7,roots='max', xmin=1, xmax=15)
+invquad <- function(a, b, c, y, roots = "both", 
+    xmin = (-Inf), xmax = (Inf), na.rm = FALSE) {
+    root1 <- sqrt((y - (c - b^2/(4 * a)))/a) - (b/(2 * a))
+    root2 <- -sqrt((y - (c - b^2/(4 * a)))/a) - (b/(2 * a))
+    root1 <- ifelse(root1 < xmin, NA, root1)
+    root1 <- ifelse(root1 > xmax, NA, root1)
+    root2 <- ifelse(root2 < xmin, NA, root2)
+    root2 <- ifelse(root2 > xmax, NA, root2)
+    if (roots == "both") {
+        result <- c(root1, root2)
+        if (na.rm) 
+            result <- ifelse(is.na(root1), root2, result)
+        if (na.rm) 
+            result <- ifelse(is.na(root2), root1, result)
+        if (na.rm) 
+            result <- ifelse(is.na(root1) & is.na(root2), 
+                NA, result)
+    }
+    if (roots == "min") 
+        result <- pmin(root1, root2, na.rm = TRUE)
+    if (roots == "max") 
+        result <- pmax(root1, root2, na.rm = TRUE)
+    return(result)
+}
+```
+
+
+```r
+
+#Some examples
+invquad(1, 1, -10, 0)
+```
+
+
+```
+## [1]  2.702 -3.702
+```
+
+```r
+
+invquad(0.1, 0.01, -0.5, 7, roots = "max", xmin = 1, 
+    xmax = 15)
+`
+
+```
+## [1] 8.61
+```
+
