@@ -1,6 +1,6 @@
-= Finding the Inverse of a Quadratic Equation =
+# Finding the Inverse of a Quadratic Equation 
 
-== The Calibration Problem ==
+## The Calibration Problem 
 
 I found myself trying to build some R scripts for calculating an unknown 
 concentration using an external calibration line.  This is a basic technique 
@@ -11,7 +11,7 @@ your unknown concentrations against their measured response.  Easy.
 
 This is easy in R (insert R example)
 
-``` {r}
+```{r}
 simpleregression<-data.frame(x=1:10, y=(1:10*rnorm(10,mean=0.5, sd=0.05)))
 simpleregression
 
@@ -38,7 +38,7 @@ In addition, a quadratic regression can have two given values for x at a given y
 and we're only interested in one, so I wrote a small function to find the inverse of
 a quadratic equation in a given interval.
 
-``` {r}
+```{r}
 
 #' Calculate the inverse of a quadratic function y=ax^2+bx+c (ie find x when given y)
 #' Gives NaN with non real solutions

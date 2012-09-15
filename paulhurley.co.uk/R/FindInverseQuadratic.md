@@ -1,6 +1,6 @@
-= Finding the Inverse of a Quadratic Equation =
+# Finding the Inverse of a Quadratic Equation 
 
-== The Calibration Problem ==
+## The Calibration Problem 
 
 I found myself trying to build some R scripts for calculating an unknown 
 concentration using an external calibration line.  This is a basic technique 
@@ -13,86 +13,64 @@ This is easy in R (insert R example)
 
 
 ```r
-simpleregression <- data.frame(x = 1:10, y = (1:10 * 
-    rnorm(10, mean = 0.5, sd = 0.05)))
-```
-
-
-
-```r
+simpleregression <- data.frame(x = 1:10, y = (1:10 * rnorm(10, mean = 0.5, sd = 0.05)))
 simpleregression
 ```
 
 ```
 ##     x      y
-## 1   1 0.5011
-## 2   2 0.9610
-## 3   3 1.8420
-## 4   4 1.7553
-## 5   5 2.8579
-## 6   6 3.4318
-## 7   7 3.8896
-## 8   8 4.8657
-## 9   9 3.6248
-## 10 10 4.6099
+## 1   1 0.5309
+## 2   2 0.9513
+## 3   3 1.2909
+## 4   4 2.0230
+## 5   5 2.5490
+## 6   6 2.9564
+## 7   7 3.0592
+## 8   8 3.9246
+## 9   9 5.5625
+## 10 10 4.8947
 ```
 
 ```r
 
 lmreg <- lm(data = simpleregression, x ~ y)
-```
 
-
-```r
-
-unknowns <- data.frame(y = runif(10, min = 0, 
-    max = 5))
-```
-
-
-```r
+unknowns <- data.frame(y = runif(10, min = 0, max = 5))
 unknowns
 ```
-
 
 ```
 ##         y
-## 1  3.6607
-## 2  4.2799
-## 3  0.6766
-## 4  1.9643
-## 5  3.7174
-## 6  2.5744
-## 7  1.0302
-## 8  3.9674
-## 9  3.2613
-## 10 4.2621
+## 1  3.6863
+## 2  2.7264
+## 3  0.5838
+## 4  3.2940
+## 5  0.3254
+## 6  2.3993
+## 7  1.0965
+## 8  0.7412
+## 9  3.0964
+## 10 2.1267
 ```
 
 ```r
 
-unknowns$predx <- (unknowns$y/coef(lmreg)[[2]]) - 
-    coef(lmreg)[[1]]
-```
-
-
-```r
+unknowns$predx <- (unknowns$y/coef(lmreg)[[2]]) - coef(lmreg)[[1]]
 unknowns
 ```
 
-
 ```
-##         y  predx
-## 1  3.6607 1.8070
-## 2  4.2799 2.1333
-## 3  0.6766 0.2346
-## 4  1.9643 0.9131
-## 5  3.7174 1.8369
-## 6  2.5744 1.2346
-## 7  1.0302 0.4209
-## 8  3.9674 1.9686
-## 9  3.2613 1.5966
-## 10 4.2621 2.1239
+##         y   predx
+## 1  3.6863  1.4983
+## 2  2.7264  0.9569
+## 3  0.5838 -0.2513
+## 4  3.2940  1.2771
+## 5  0.3254 -0.3970
+## 6  2.3993  0.7725
+## 7  1.0965  0.0378
+## 8  0.7412 -0.1626
+## 9  3.0964  1.1656
+## 10 2.1267  0.6188
 ```
 
 
@@ -131,8 +109,8 @@ a quadratic equation in a given interval.
 #' @examples
 #' invquad(1,1,-10,0)
 #' invquad(0.1,0.01,-0.5,7,roots='max', xmin=1, xmax=15)
-invquad <- function(a, b, c, y, roots = "both", 
-    xmin = (-Inf), xmax = (Inf), na.rm = FALSE) {
+invquad <- function(a, b, c, y, roots = "both", xmin = (-Inf), xmax = (Inf), 
+    na.rm = FALSE) {
     root1 <- sqrt((y - (c - b^2/(4 * a)))/a) - (b/(2 * a))
     root2 <- -sqrt((y - (c - b^2/(4 * a)))/a) - (b/(2 * a))
     root1 <- ifelse(root1 < xmin, NA, root1)
@@ -146,8 +124,7 @@ invquad <- function(a, b, c, y, roots = "both",
         if (na.rm) 
             result <- ifelse(is.na(root2), root1, result)
         if (na.rm) 
-            result <- ifelse(is.na(root1) & is.na(root2), 
-                NA, result)
+            result <- ifelse(is.na(root1) & is.na(root2), NA, result)
     }
     if (roots == "min") 
         result <- pmin(root1, root2, na.rm = TRUE)
@@ -155,15 +132,10 @@ invquad <- function(a, b, c, y, roots = "both",
         result <- pmax(root1, root2, na.rm = TRUE)
     return(result)
 }
-```
 
-
-```r
-
-#Some examples
+# Some examples
 invquad(1, 1, -10, 0)
 ```
-
 
 ```
 ## [1]  2.702 -3.702
@@ -171,9 +143,8 @@ invquad(1, 1, -10, 0)
 
 ```r
 
-invquad(0.1, 0.01, -0.5, 7, roots = "max", xmin = 1, 
-    xmax = 15)
-`
+invquad(0.1, 0.01, -0.5, 7, roots = "max", xmin = 1, xmax = 15)
+```
 
 ```
 ## [1] 8.61
