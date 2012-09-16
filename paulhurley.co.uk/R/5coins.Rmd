@@ -1,0 +1,72 @@
+# What's the smallest amount you can't make with 5 coins ?
+
+My amazing, awesome wife often comes up with the little puzzles for our
+amazing children, and this one seemed destined to be solved in R.  So, 
+using up to 5 coins (1p, 2p, 5p, 10p, 20p and 50p) first she asked our 
+kids whether they could make every value up to 50p, and then what the 
+smallest value they couldn't make was.
+
+Here's my R solution (which took about 5mins less than our daughter took 
+to answer the first question)
+
+```{r}
+# What Amounts can't you make using up to 5 coins 1p to 50p
+# 
+# Author: Paul Hurley
+###############################################################################
+library(ggplot2)
+library(plyr)
+
+#Define our coins
+coins<-as.factor(c(0,1,2,5,10,20,50))
+
+#build a list of all the possibilities
+possibilities<-expand.grid(coin1=coins, coin2=coins, 
+coin3=coins, coin4=coins, coin5=coins)
+
+#calculate the result
+possibilities$total<-as.numeric(as.character(possibilities$coin1))+
+		as.numeric(as.character(possibilities$coin2))+
+		as.numeric(as.character(possibilities$coin3))+
+		as.numeric(as.character(possibilities$coin4))+
+		as.numeric(as.character(possibilities$coin5))
+
+#define our target values
+targets<-1:250
+
+#what amounts aren't possible
+targets[!targets %in% possibilities$total]
+```
+
+So, the smallest value we can't make is 
+`r min(targets[!targets %in% possibilities$total])`
+
+We can even produce a table of the number of ways to make each
+ number, and a graph
+```{r}
+tableofpossibilities<-ddply(.data=possibilities, .(total), nrow)
+
+ggplot(data=possibilities, aes(x=total))+geom_histogram(binwidth=1)
+```
+
+Then when I triumphantly told her, she asked, 'what about 4 coins ?'
+```{r}
+#How about 4 coins
+#build a list of all the possibilities
+fourpossibilities<-expand.grid(coin1=coins, coin2=coins, 
+		coin3=coins, coin4=coins)
+
+#calculate the result
+fourpossibilities$total<-as.numeric(as.character(fourpossibilities$coin1))+
+		as.numeric(as.character(fourpossibilities$coin2))+
+		as.numeric(as.character(fourpossibilities$coin3))+
+		as.numeric(as.character(fourpossibilities$coin4))
+
+#what values can't be made ?
+targets[!targets %in% fourpossibilities$total]
+```
+So, the answer is `r min(targets[!targets %in% fourpossibilities$total])`and a graph
+```{r}
+
+ggplot(data=fourpossibilities, aes(x=total))+geom_histogram(binwidth=1)
+```
